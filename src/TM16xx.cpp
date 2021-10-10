@@ -23,7 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //	#include "WProgram.h"
 //#endif
 
-#include "TM16xx.h"
+#include "TM16xx.hpp"
 //#include "string.h"
 
 TM16xx::TM16xx(GPIO dataPin, GPIO clockPin, GPIO strobePin, uint8_t maxDisplays, uint8_t digits, bool activateDisplay,	uint8_t intensity)
@@ -100,7 +100,7 @@ void TM16xx::sendChar(uint8_t pos, uint8_t data, bool dot)
 void TM16xx::setDisplayDigit(uint8_t digit, uint8_t pos, bool dot, const uint8_t numberFont[])
 {
 	// とりあえず動かすためにコメントアウト
-//	sendChar(pos, pgm_read_byte_near(numberFont + (digit & 0xF)), dot);
+	sendChar(pos, pgm_read_byte_near(numberFont + (digit & 0xF)), dot);
 }
 
 void TM16xx::setDisplayToDecNumber(int nNumber, uint8_t bDots)		// uint8_t bDots=0

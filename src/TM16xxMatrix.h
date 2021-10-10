@@ -16,7 +16,7 @@ Made by Maxint R&D. See https://github.com/maxint-rd/
 #ifndef _TM16XX_MATRIX_H
 #define _TM16XX_MATRIX_H
 
-#include "TM16xx.h"
+#include "TM16xx.hpp"
 #include <cstdint>
 
 #define TM16XX_MATRIX_MAXCOLUMNS 16

@@ -23,7 +23,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //	#include "WProgram.h"
 //#endif
 
-#include "TM1640.h"
+#include "TM1640.hpp"
 
 TM1640::TM1640(GPIO dataPin, GPIO clockPin, uint8_t numDigits, bool activateDisplay, uint8_t intensity)
 	: TM16xx(dataPin, clockPin, dataPin, TM1640_MAX_POS, numDigits, activateDisplay, intensity)

@@ -26,7 +26,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //	#include "WProgram.h"
 //#endif
 
-#include "TM16xx.h"
+#include "TM16xx.hpp"
 #include <cstdint>
 
 #define TM1640_MAX_POS 16
