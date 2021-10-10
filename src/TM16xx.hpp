@@ -26,11 +26,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 //	#include "WProgram.h"
 //#endif
 
-#define TM16XX_CMD_DATA_AUTO 0x40
+#define TM16XX_CMD_DATA_AUTO 0x40  // 1000000
 #define TM16XX_CMD_DATA_READ 0x42			// command to read data used on two wire interfaces of TM1637
-#define TM16XX_CMD_DATA_FIXED 0x44
-#define TM16XX_CMD_DISPLAY 0x80
-#define TM16XX_CMD_ADDRESS 0xC0
+#define TM16XX_CMD_DATA_FIXED 0x44 // 01000100
+#define TM16XX_CMD_DISPLAY 0x80    // 10000000
+#define TM16XX_CMD_ADDRESS 0xC0    // 11000000
 
 #include "TM16xxFonts.h"
 #include <cstdint>
@@ -50,8 +50,9 @@ public:
      * the number of digits used to display numbers or text, 
      * display state and the starting intensity (0-7).
      */
-    TM16xx(GPIO dataPin, GPIO clockPin, GPIO strobePin, uint8_t maxDisplays, uint8_t digits, bool activateDisplay=true,	uint8_t intensity=7);
+    TM16xx(GPIO dataPin, GPIO clockPin, GPIO strobePin, uint8_t maxDisplays, uint8_t digits);
 
+    virtual void init(bool activateDisplay=true, uint8_t intensity=7);
     /** Set the display (segments and LEDs) active or off and intensity (range from 0-7). */
     virtual void setupDisplay(bool active, uint8_t intensity);
 
@@ -61,6 +62,7 @@ public:
 	  
 	  // Basic display functions. For additional display features use the TM16xxDisplay class
     /** Set a single display at pos (starting at 0) to a digit (left to right) */
+	// digit その桁の値、pos どこの位置か、dot 小数点はつけるか、numberFont 数字のフォント
     virtual void setDisplayDigit(uint8_t digit, uint8_t pos=0, bool dot=false, const uint8_t numberFont[] = TM16XX_NUMBER_FONT);
 	/** Set the display to a decimal number */
     virtual void setDisplayToDecNumber(int nNumber, uint8_t bDots=0);

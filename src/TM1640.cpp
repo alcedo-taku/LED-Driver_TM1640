@@ -25,11 +25,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "TM1640.hpp"
 
-TM1640::TM1640(GPIO dataPin, GPIO clockPin, uint8_t numDigits, bool activateDisplay, uint8_t intensity)
-	: TM16xx(dataPin, clockPin, dataPin, TM1640_MAX_POS, numDigits, activateDisplay, intensity)
+TM1640::TM1640(GPIO dataPin, GPIO clockPin, uint8_t numDigits)
+	: TM16xx(dataPin, clockPin, dataPin, TM1640_MAX_POS, numDigits)
 { // NOTE: Like the TM1637, the TM1640 only has DIO and CLK. Therefor the DIO-pin is initialized as strobe in the constructor
-	clearDisplay();
-	setupDisplay(activateDisplay, intensity);
 }
 
 /*

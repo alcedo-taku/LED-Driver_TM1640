@@ -34,7 +34,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 class TM1640 : public TM16xx{
 public:
 	// Instantiate a TM1640 module specifying data and clock pins, number of digits, the display state, the starting intensity (0-7).
-  	TM1640(GPIO dataPin, GPIO clockPin, uint8_t numDigits=16, bool activateDisplay = true, uint8_t intensity = 7);
+  	TM1640(GPIO dataPin, GPIO clockPin, uint8_t numDigits=16);
 
 protected:
     //virtual void bitDelay();

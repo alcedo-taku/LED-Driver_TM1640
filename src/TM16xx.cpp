@@ -26,18 +26,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "TM16xx.hpp"
 //#include "string.h"
 
-TM16xx::TM16xx(GPIO dataPin, GPIO clockPin, GPIO strobePin, uint8_t maxDisplays, uint8_t digits, bool activateDisplay,	uint8_t intensity)
+TM16xx::TM16xx(GPIO dataPin, GPIO clockPin, GPIO strobePin, uint8_t maxDisplays, uint8_t digits)
 {
 	this->dataPin = dataPin;
 	this->clockPin = clockPin;
 	this->strobePin = strobePin;
 	this->_maxDisplays = maxDisplays;
 	this->digits = digits;
-
-	HAL_GPIO_WritePin(strobePin.GPIOx, strobePin.GPIO_Pin, GPIO_PIN_SET);
-	HAL_GPIO_WritePin(clockPin.GPIOx, clockPin.GPIO_Pin, GPIO_PIN_SET);
-
-	//sendCommand(TM16XX_CMD_DISPLAY | (activateDisplay ? 8 : 0) | min(7, intensity));		// display command: on or intensity
 
 /*
 	  sendCommand(TM16XX_CMD_DATA_AUTO);			// data command: set data mode to auto-increment write mode
@@ -53,6 +48,13 @@ TM16xx::TM16xx(GPIO dataPin, GPIO clockPin, GPIO strobePin, uint8_t maxDisplays,
 	clearDisplay();
 	setupDisplay(activateDisplay, intensity);
 */
+}
+
+void TM16xx::init(bool activateDisplay,	uint8_t intensity){
+	HAL_GPIO_WritePin(strobePin.GPIOx, strobePin.GPIO_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(clockPin.GPIOx, clockPin.GPIO_Pin, GPIO_PIN_SET);
+	clearDisplay();
+	sendCommand(TM16XX_CMD_DISPLAY | (activateDisplay ? 8 : 0) | std::min((uint8_t)7, intensity));		// display command: on or intensity
 }
 
 void TM16xx::setupDisplay(bool active, uint8_t intensity)
@@ -100,19 +102,19 @@ void TM16xx::sendChar(uint8_t pos, uint8_t data, bool dot)
 void TM16xx::setDisplayDigit(uint8_t digit, uint8_t pos, bool dot, const uint8_t numberFont[])
 {
 	// とりあえず動かすためにコメントアウト
-	sendChar(pos, pgm_read_byte_near(numberFont + (digit & 0xF)), dot);
+	sendChar(pos, *(const unsigned char *)(numberFont + (digit & 0xF)), dot);
 }
 
 void TM16xx::setDisplayToDecNumber(int nNumber, uint8_t bDots)		// uint8_t bDots=0
 {	// Function to display a decimal number on a n-digit clock display.
 	// Kept simple to fit in ATtiny44A
 	// For extended display features use the TM16xxDisplay class
+	// 小数点の場所をdotで示している？
 
 	// TODO: support large displays such as 8segx16 on TM1640
 	for(uint8_t nPos=1; nPos<=digits; nPos++)
 	{
-		// とりあえず動かすためにコメントアウト
-//		setDisplayDigit(nNumber % 10, digits - nPos, bDots&_BV(nPos));
+		setDisplayDigit(nNumber % 10, digits - nPos, bDots&(1<<(nPos)));
 		nNumber/=10;
 	}
 }
@@ -126,7 +128,7 @@ void TM16xx::setDisplay(const uint8_t values[], uint8_t size)
 {	// send an array of values to the display
 	for (uint8_t i = 0; i < size; i++) {
 		// とりあえず動かすためにコメントアウト
-//		sendChar(i, pgm_read_byte_near(values+i), 0);
+		sendChar(i, *(const unsigned char *)(values+i), 0);
 	}
 }
 
@@ -135,7 +137,7 @@ void TM16xx::setDisplayToString(const char* string, const uint16_t dots, const u
 	for (int i = 0; i < digits - pos; i++) {
 		if (string[i] != '\0') {
 			// とりあえず動かすためにコメントアウト
-//			sendChar(i + pos, pgm_read_byte_near(font+(string[i] - 32)), (dots & (1 << (digits - i - 1))) != 0);
+			sendChar(i + pos, *(const unsigned char *)(font+(string[i] - 32)), (dots & (1 << (digits - i - 1))) != 0);
 		} else {
 			break;
 		}
@@ -156,6 +158,12 @@ uint32_t TM16xx::getButtons()
 void TM16xx::bitDelay()
 {	// if needed derived classes can add a delay (eg. for TM1637)
 	//delayMicroseconds(50);
+//	asm("NOP");
+//	uint16_t wait = 1;
+//	wait *= 1;
+//	do{
+//		wait--;
+//	}while(wait);
 }
 
 void TM16xx::start()
