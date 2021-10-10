@@ -7,7 +7,7 @@ Made by Maxint R&D. See https://github.com/maxint-rd/
 */
 #include "TM16xxMatrix.h"
 
-TM16xxMatrix::TM16xxMatrix(TM16xx *pTM16xx, byte nColumns, byte nRows)
+TM16xxMatrix::TM16xxMatrix(TM16xx *pTM16xx, uint8_t nColumns, uint8_t nRows)
 {
 	_pTM16xx=pTM16xx;
 	_nColumns=nColumns;
@@ -18,7 +18,7 @@ TM16xxMatrix::TM16xxMatrix(TM16xx *pTM16xx, byte nColumns, byte nRows)
 	// as different chips support different sizes
 }
 
-void TM16xxMatrix::setColumn(byte nCol, byte bPixels)
+void TM16xxMatrix::setColumn(uint8_t nCol, uint8_t bPixels)
 {
 	_btColumns[nCol]=bPixels;
 	_pTM16xx->setSegments(bPixels, nCol);
@@ -26,21 +26,23 @@ void TM16xxMatrix::setColumn(byte nCol, byte bPixels)
 
 void TM16xxMatrix::setAll(bool fOn)
 {
-	for(byte nCol=0; nCol<_nColumns; nCol++)
+	for(uint8_t nCol=0; nCol<_nColumns; nCol++)
 		setColumn(nCol, fOn?0xFF:0);
 }
 
-void TM16xxMatrix::setPixel(byte nCol, byte nRow, bool fOn)
+void TM16xxMatrix::setPixel(uint8_t nCol, uint8_t nRow, bool fOn)
 {
-	byte btColumn=_btColumns[nCol];
-	if(fOn)
-		btColumn=btColumn | _BV(nRow);
-	else
-		btColumn=btColumn & ~_BV(nRow);
-	setColumn(nCol, btColumn);
+	uint8_t btColumn=_btColumns[nCol];
+	// とりあえず動かすためにコメントアウト
+//	if(fOn)
+//		btColumn=btColumn | _BV(nRow);
+//	else
+//		btColumn=btColumn & ~_BV(nRow);
+//	setColumn(nCol, btColumn);
 }
 	
-bool TM16xxMatrix::getPixel(byte nCol, byte nRow)
+bool TM16xxMatrix::getPixel(uint8_t nCol, uint8_t nRow)
 {
-	return((_btColumns[nCol]&_BV(nRow))!=0);
+	// とりあえず動かすためにコメントアウト
+//	return((_btColumns[nCol]&_BV(nRow))!=0);
 }

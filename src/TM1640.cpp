@@ -17,15 +17,15 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#if defined(ARDUINO) && ARDUINO >= 100
-	#include "Arduino.h"
-#else
-	#include "WProgram.h"
-#endif
+//#if defined(ARDUINO) && ARDUINO >= 100
+//	#include "Arduino.h"
+//#else
+//	#include "WProgram.h"
+//#endif
 
 #include "TM1640.h"
 
-TM1640::TM1640(byte dataPin, byte clockPin, byte numDigits, boolean activateDisplay, byte intensity)
+TM1640::TM1640(GPIO dataPin, GPIO clockPin, uint8_t numDigits, bool activateDisplay, uint8_t intensity)
 	: TM16xx(dataPin, clockPin, dataPin, TM1640_MAX_POS, numDigits, activateDisplay, intensity)
 { // NOTE: Like the TM1637, the TM1640 only has DIO and CLK. Therefor the DIO-pin is initialized as strobe in the constructor
 	clearDisplay();
@@ -42,24 +42,24 @@ void TM1640::bitDelay()
 void TM1640::start()
 {	// if needed derived classes can use different patterns to start a command (eg. for TM1637)
 	// Datasheet: The starting condition of data input is: when CLK is high, the DIN becomes low from high;
-  digitalWrite(dataPin, LOW);
-  digitalWrite(clockPin, LOW);
-  bitDelay();
+	HAL_GPIO_WritePin(dataPin.GPIOx, dataPin.GPIO_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(clockPin.GPIOx, clockPin.GPIO_Pin, GPIO_PIN_RESET);
+	bitDelay();
 }
 
 void TM1640::stop()
 {	// if needed derived classes can use different patterns to stop a command (eg. for TM1637)
 	// datasheet: the ending condition is: when CLK is high, the DIN becomes high from low.
-  digitalWrite(clockPin, HIGH);
-  digitalWrite(dataPin, HIGH);
-  bitDelay();
+	HAL_GPIO_WritePin(clockPin.GPIOx, clockPin.GPIO_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(dataPin.GPIOx, dataPin.GPIO_Pin, GPIO_PIN_SET);
+	bitDelay();
 }
 
-void TM1640::send(byte data)
+void TM1640::send(uint8_t data)
 {
 	// MOLE 180514: TM1640 wants data and clock to be low after sending the data
 	TM16xx::send(data);
-  digitalWrite(clockPin, LOW);		// first clock low
-  digitalWrite(dataPin, LOW);			// then data low
-  bitDelay();
+	HAL_GPIO_WritePin(clockPin.GPIOx, clockPin.GPIO_Pin, GPIO_PIN_RESET); // first clock low
+	HAL_GPIO_WritePin(dataPin.GPIOx, dataPin.GPIO_Pin, GPIO_PIN_RESET);   // then data low
+	bitDelay();
 }

@@ -17,74 +17,70 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#if defined(ARDUINO) && ARDUINO >= 100
-	#include "Arduino.h"
-#else
-	#include "WProgram.h"
-#endif
+//#if defined(ARDUINO) && ARDUINO >= 100
+//	#include "Arduino.h"
+//#else
+//	#include "WProgram.h"
+//#endif
 
 #include "TM16xx.h"
 //#include "string.h"
 
-TM16xx::TM16xx(byte dataPin, byte clockPin, byte strobePin, byte maxDisplays, byte digits, boolean activateDisplay,	byte intensity)
+TM16xx::TM16xx(GPIO dataPin, GPIO clockPin, GPIO strobePin, uint8_t maxDisplays, uint8_t digits, bool activateDisplay,	uint8_t intensity)
 {
-  this->dataPin = dataPin;
-  this->clockPin = clockPin;
-  this->strobePin = strobePin;
-  this->_maxDisplays = maxDisplays;
-  this->digits = digits;
+	this->dataPin = dataPin;
+	this->clockPin = clockPin;
+	this->strobePin = strobePin;
+	this->_maxDisplays = maxDisplays;
+	this->digits = digits;
 
-  pinMode(dataPin, OUTPUT);
-  pinMode(clockPin, OUTPUT);
-  pinMode(strobePin, OUTPUT);
+	HAL_GPIO_WritePin(strobePin.GPIOx, strobePin.GPIO_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(clockPin.GPIOx, clockPin.GPIO_Pin, GPIO_PIN_SET);
 
-  digitalWrite(strobePin, HIGH);
-  digitalWrite(clockPin, HIGH);
-
-  //sendCommand(TM16XX_CMD_DISPLAY | (activateDisplay ? 8 : 0) | min(7, intensity));		// display command: on or intensity
+	//sendCommand(TM16XX_CMD_DISPLAY | (activateDisplay ? 8 : 0) | min(7, intensity));		// display command: on or intensity
 
 /*
-  sendCommand(TM16XX_CMD_DATA_AUTO);			// data command: set data mode to auto-increment write mode
-	start();
-  send(TM16XX_CMD_ADDRESS);					// address command + address C0H
-  for (int i = 0; i < 16; i++) {		// TM1638 and TM1640 have 16 data addresses, TM1637 and TM1668 have less, but will wrap.
-    send(0x00);
-  }
-	stop();
+	  sendCommand(TM16XX_CMD_DATA_AUTO);			// data command: set data mode to auto-increment write mode
+		start();
+	  send(TM16XX_CMD_ADDRESS);					// address command + address C0H
+	  for (int i = 0; i < 16; i++) {		// TM1638 and TM1640 have 16 data addresses, TM1637 and TM1668 have less, but will wrap.
+		send(0x00);
+	  }
+		stop();
 */	
-	// Note: calling these methods should be done in constructor of derived class in order to use properly initialized members!
+	  // Note: calling these methods should be done in constructor of derived class in order to use properly initialized members!
 /*
 	clearDisplay();
 	setupDisplay(activateDisplay, intensity);
 */
 }
 
-void TM16xx::setupDisplay(boolean active, byte intensity)
+void TM16xx::setupDisplay(bool active, uint8_t intensity)
 {
-  sendCommand(TM16XX_CMD_DISPLAY | (active ? 8 : 0) | min(7, intensity));
+	sendCommand(TM16XX_CMD_DISPLAY | (active ? 8 : 0) | std::min((uint8_t)7, intensity));
 }
 
 void TM16xx::clearDisplay()
 {	// Clear all data registers. The number of registers depends on the chip.
-	// TM1638 (10x8): 10 segments per grid, stored in two bytes. The first byte contains the first 8 display segments, second byte has seg9+seg10  => 16 bytes
-	// TM1640 (8x16): one byte per grid => 16 bytes
-	// TM1637 (8x6): one byte per grid => 6 bytes
-	// TM1668 (10x7 - 14x3): two bytes per grid => 14 bytes
-  sendCommand(TM16XX_CMD_DATA_AUTO);		// set auto increment addressing mode
+	// TM1638 (10x8): 10 segments per grid, stored in two uint8_ts. The first uint8_t contains the first 8 display segments, second uint8_t has seg9+seg10  => 16 uint8_ts
+	// TM1640 (8x16): one uint8_t per grid => 16 uint8_ts
+	// TM1637 (8x6): one uint8_t per grid => 6 uint8_ts
+	// TM1668 (10x7 - 14x3): two uint8_ts per grid => 14 uint8_ts
+	sendCommand(TM16XX_CMD_DATA_AUTO);		// set auto increment addressing mode
 
 	// send the address followed by bulk-sending of the data to clear the display memory
 	start();
-  send(TM16XX_CMD_ADDRESS);
-  for (int i = 0; i < _maxDisplays; i++) {
-    send(0x00);
-    if(_maxSegments>8)
-    	send(0x00);		// send second byte (applicable to TM1638 and TM1668)
-  }
+	send(TM16XX_CMD_ADDRESS);
+	for (int i = 0; i < _maxDisplays; i++) {
+		send(0x00);
+		if(_maxSegments>8)
+			send(0x00);		// send second uint8_t (applicable to TM1638 and TM1668)
+	}
 	stop();
 
 }
 
-void TM16xx::setSegments(byte segments, byte position)
+void TM16xx::setSegments(uint8_t segments, uint8_t position)
 {	// set 8 leds on common grd as specified
 	// TODO: support 10-14 segments on chips like TM1638/TM1668
 	if(position<_maxDisplays)
@@ -92,7 +88,7 @@ void TM16xx::setSegments(byte segments, byte position)
 		//sendData(TM16XX_CMD_ADDRESS | position, segments);
 }
 
-void TM16xx::sendChar(byte pos, byte data, boolean dot)
+void TM16xx::sendChar(uint8_t pos, uint8_t data, bool dot)
 {
 /*
 	if(pos<_maxDisplays)
@@ -101,45 +97,49 @@ void TM16xx::sendChar(byte pos, byte data, boolean dot)
 	setSegments(data | (dot ? 0b10000000 : 0), pos);
 }
 
-void TM16xx::setDisplayDigit(byte digit, byte pos, boolean dot, const byte numberFont[])
+void TM16xx::setDisplayDigit(uint8_t digit, uint8_t pos, bool dot, const uint8_t numberFont[])
 {
-  sendChar(pos, pgm_read_byte_near(numberFont + (digit & 0xF)), dot);
+	// とりあえず動かすためにコメントアウト
+//	sendChar(pos, pgm_read_byte_near(numberFont + (digit & 0xF)), dot);
 }
 
-void TM16xx::setDisplayToDecNumber(int nNumber, byte bDots)		// byte bDots=0
+void TM16xx::setDisplayToDecNumber(int nNumber, uint8_t bDots)		// uint8_t bDots=0
 {	// Function to display a decimal number on a n-digit clock display.
 	// Kept simple to fit in ATtiny44A
 	// For extended display features use the TM16xxDisplay class
 
 	// TODO: support large displays such as 8segx16 on TM1640
-  for(byte nPos=1; nPos<=digits; nPos++)
-  {
-    setDisplayDigit(nNumber % 10, digits - nPos, bDots&_BV(nPos));
-    nNumber/=10;
-  }
+	for(uint8_t nPos=1; nPos<=digits; nPos++)
+	{
+		// とりあえず動かすためにコメントアウト
+//		setDisplayDigit(nNumber % 10, digits - nPos, bDots&_BV(nPos));
+		nNumber/=10;
+	}
 }
 
-void TM16xx::clearDisplayDigit(byte pos, boolean dot)
+void TM16xx::clearDisplayDigit(uint8_t pos, bool dot)
 {
-  sendChar(pos, 0, dot);
+	sendChar(pos, 0, dot);
 }
 
-void TM16xx::setDisplay(const byte values[], byte size)
+void TM16xx::setDisplay(const uint8_t values[], uint8_t size)
 {	// send an array of values to the display
-  for (byte i = 0; i < size; i++) {
-    sendChar(i, pgm_read_byte_near(values+i), 0);
-  }
+	for (uint8_t i = 0; i < size; i++) {
+		// とりあえず動かすためにコメントアウト
+//		sendChar(i, pgm_read_byte_near(values+i), 0);
+	}
 }
 
-void TM16xx::setDisplayToString(const char* string, const word dots, const byte pos, const byte font[])
+void TM16xx::setDisplayToString(const char* string, const uint16_t dots, const uint8_t pos, const uint8_t font[])
 {
-  for (int i = 0; i < digits - pos; i++) {
-  	if (string[i] != '\0') {
-		  sendChar(i + pos, pgm_read_byte_near(font+(string[i] - 32)), (dots & (1 << (digits - i - 1))) != 0);
+	for (int i = 0; i < digits - pos; i++) {
+		if (string[i] != '\0') {
+			// とりあえず動かすためにコメントアウト
+//			sendChar(i + pos, pgm_read_byte_near(font+(string[i] - 32)), (dots & (1 << (digits - i - 1))) != 0);
 		} else {
-		  break;
+			break;
 		}
-  }
+	}
 }
 
 // key-scanning method, implemented in chip specific derived class
@@ -160,73 +160,71 @@ void TM16xx::bitDelay()
 
 void TM16xx::start()
 {	// if needed derived classes can use different patterns to start a command (eg. for TM1637)
-  digitalWrite(strobePin, LOW);
-  bitDelay();
+	HAL_GPIO_WritePin(strobePin.GPIOx, strobePin.GPIO_Pin, GPIO_PIN_RESET);
+	bitDelay();
 }
 
 void TM16xx::stop()
 {	// if needed derived classes can use different patterns to stop a command (eg. for TM1637)
-  digitalWrite(strobePin, HIGH);
-  bitDelay();
+	HAL_GPIO_WritePin(strobePin.GPIOx, strobePin.GPIO_Pin, GPIO_PIN_SET);
+	bitDelay();
 }
 
-void TM16xx::send(byte data)
+void TM16xx::send(uint8_t data)
 {
 	// MMOLE 180203: shiftout does something, but is not okay (tested on TM1668)
 	//shiftOut(dataPin, clockPin, LSBFIRST, data);
-  for (int i = 0; i < 8; i++) {
-    digitalWrite(clockPin, LOW);
-    bitDelay();
-    digitalWrite(dataPin, data & 1 ? HIGH : LOW);
-    bitDelay();
-    data >>= 1;
-    digitalWrite(clockPin, HIGH);
-    bitDelay();
-  }
-  bitDelay();		// NOTE: TM1638 specifies a Twait between bytes of minimal 1us.
+	for (int i = 0; i < 8; i++) {
+		HAL_GPIO_WritePin(clockPin.GPIOx, clockPin.GPIO_Pin, GPIO_PIN_RESET);
+		bitDelay();
+		HAL_GPIO_WritePin(dataPin.GPIOx, dataPin.GPIO_Pin, data & 1 ? GPIO_PIN_SET : GPIO_PIN_RESET);
+		bitDelay();
+		data >>= 1;
+		HAL_GPIO_WritePin(clockPin.GPIOx, clockPin.GPIO_Pin, GPIO_PIN_SET);
+		bitDelay();
+	}
+	bitDelay();		// NOTE: TM1638 specifies a Twait between uint8_ts of minimal 1us.
 }
 
-void TM16xx::sendCommand(byte cmd)
+void TM16xx::sendCommand(uint8_t cmd)
 {
 	start();
-  send(cmd);
-  stop();
+	send(cmd);
+	stop();
 }
 
-void TM16xx::sendData(byte address, byte data)
+void TM16xx::sendData(uint8_t address, uint8_t data)
 {
-  sendCommand(TM16XX_CMD_DATA_FIXED);							// use fixed addressing for data
+	sendCommand(TM16XX_CMD_DATA_FIXED);							// use fixed addressing for data
 	start();
-  send(TM16XX_CMD_ADDRESS | address);						// address command + address
-  send(data);
-  stop();
+	send(TM16XX_CMD_ADDRESS | address);						// address command + address
+	send(data);
+	stop();
 }
 
-byte TM16xx::receive()
+uint8_t TM16xx::receive()
 {
-  byte temp = 0;
+	uint8_t temp = 0;
 
-  // Pull-up on
-  pinMode(dataPin, INPUT);
-  digitalWrite(dataPin, HIGH);
+	// Pull-up on
+	HAL_GPIO_WritePin(dataPin.GPIOx, dataPin.GPIO_Pin, GPIO_PIN_SET);
 
-  for (int i = 0; i < 8; i++) {
-    temp >>= 1;
+	for (int i = 0; i < 8; i++) {
+		temp >>= 1;
 
-    digitalWrite(clockPin, LOW);
-    bitDelay();		// NOTE: on TM1637 reading keys should be slower than 250Khz (see datasheet p3)
+		HAL_GPIO_WritePin(clockPin.GPIOx, clockPin.GPIO_Pin, GPIO_PIN_RESET);
+		bitDelay();		// NOTE: on TM1637 reading keys should be slower than 250Khz (see datasheet p3)
 
-    if (digitalRead(dataPin)) {
-      temp |= 0x80;
-    }
+		if (HAL_GPIO_ReadPin(dataPin.GPIOx, dataPin.GPIO_Pin)) {
+			temp |= 0x80;
+		}
 
-    digitalWrite(clockPin, HIGH);
-    bitDelay();
-  }
+		HAL_GPIO_WritePin(clockPin.GPIOx, clockPin.GPIO_Pin, GPIO_PIN_SET);
+		bitDelay();
+	}
 
-  // Pull-up off
-  pinMode(dataPin, OUTPUT);
-  digitalWrite(dataPin, LOW);
+	// Pull-up off
+	HAL_GPIO_WritePin(dataPin.GPIOx, dataPin.GPIO_Pin, GPIO_PIN_RESET);
 
-  return temp;
+	return temp;
 }

@@ -20,27 +20,27 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef TM1640_h
 #define TM1640_h
 
-#if defined(ARDUINO) && ARDUINO >= 100
-	#include "Arduino.h"
-#else
-	#include "WProgram.h"
-#endif
+//#if defined(ARDUINO) && ARDUINO >= 100
+//	#include "Arduino.h"
+//#else
+//	#include "WProgram.h"
+//#endif
 
 #include "TM16xx.h"
+#include <cstdint>
 
 #define TM1640_MAX_POS 16
 
-class TM1640 : public TM16xx
-{
-  public:
-		// Instantiate a TM1640 module specifying data and clock pins, number of digits, the display state, the starting intensity (0-7).
-  	TM1640(byte dataPin, byte clockPin, byte numDigits=16, boolean activateDisplay = true, byte intensity = 7);
+class TM1640 : public TM16xx{
+public:
+	// Instantiate a TM1640 module specifying data and clock pins, number of digits, the display state, the starting intensity (0-7).
+  	TM1640(GPIO dataPin, GPIO clockPin, uint8_t numDigits=16, bool activateDisplay = true, uint8_t intensity = 7);
 
-  protected:
+protected:
     //virtual void bitDelay();
     virtual void start();
     virtual void stop();
-    virtual void send(byte data);
+    virtual void send(uint8_t data);
 };
 
 #endif

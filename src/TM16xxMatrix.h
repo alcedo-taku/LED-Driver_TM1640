@@ -17,25 +17,26 @@ Made by Maxint R&D. See https://github.com/maxint-rd/
 #define _TM16XX_MATRIX_H
 
 #include "TM16xx.h"
+#include <cstdint>
 
 #define TM16XX_MATRIX_MAXCOLUMNS 16
 
 class TM16xxMatrix
 {
  public:
-	TM16xxMatrix(TM16xx *pTM16xx, byte nColumns, byte nRows);
-	void setColumn(byte nCol, byte bPixels);
+	TM16xxMatrix(TM16xx *pTM16xx, uint8_t nColumns, uint8_t nRows);
+	void setColumn(uint8_t nCol, uint8_t bPixels);
 	void setAll(bool fOn);
-	void setPixel(byte nCol, byte nRow, bool fOn);
-	bool getPixel(byte nCol, byte nRow);
-	inline byte getNumRows() { return(_nRows); }
-	inline byte getNumColumns() { return(_nColumns); }
+	void setPixel(uint8_t nCol, uint8_t nRow, bool fOn);
+	bool getPixel(uint8_t nCol, uint8_t nRow);
+	inline uint8_t getNumRows() { return(_nRows); }
+	inline uint8_t getNumColumns() { return(_nColumns); }
 
  protected:
   TM16xx *_pTM16xx;
-  byte _nColumns;
-  byte _nRows;
+  uint8_t _nColumns;
+  uint8_t _nRows;
   
-  byte _btColumns[TM16XX_MATRIX_MAXCOLUMNS]={0};
+  uint8_t _btColumns[TM16XX_MATRIX_MAXCOLUMNS]={0};
 };
 #endif
